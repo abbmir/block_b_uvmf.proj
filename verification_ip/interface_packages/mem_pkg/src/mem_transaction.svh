@@ -38,66 +38,6 @@ class mem_transaction #(
   // pragma uvmf custom class_item_additional begin
   // pragma uvmf custom class_item_additional end
 
-  //*******************************************************************
-  //*******************************************************************
-  // Macros that define structs and associated functions are
-  // located in mem_macros.svh
-
-  //*******************************************************************
-  // Monitor macro used by mem_monitor and mem_monitor_bfm
-  // This struct is defined in mem_macros.svh
-  `mem_MONITOR_STRUCT
-    mem_monitor_s mem_monitor_struct;
-  //*******************************************************************
-  // FUNCTION: to_monitor_struct()
-  // This function packs transaction variables into a mem_monitor_s
-  // structure.  The function returns the handle to the mem_monitor_struct.
-  // This function is defined in mem_macros.svh
-  `mem_TO_MONITOR_STRUCT_FUNCTION 
-  //*******************************************************************
-  // FUNCTION: from_monitor_struct()
-  // This function unpacks the struct provided as an argument into transaction 
-  // variables of this class.
-  // This function is defined in mem_macros.svh
-  `mem_FROM_MONITOR_STRUCT_FUNCTION 
-
-  //*******************************************************************
-  // Initiator macro used by mem_driver and mem_driver_bfm
-  // to communicate initiator driven data to mem_driver_bfm.
-  // This struct is defined in mem_macros.svh
-  `mem_INITIATOR_STRUCT
-    mem_initiator_s mem_initiator_struct;
-  //*******************************************************************
-  // FUNCTION: to_initiator_struct()
-  // This function packs transaction variables into a mem_initiator_s
-  // structure.  The function returns the handle to the mem_initiator_struct.
-  // This function is defined in mem_macros.svh
-  `mem_TO_INITIATOR_STRUCT_FUNCTION  
-  //*******************************************************************
-  // FUNCTION: from_initiator_struct()
-  // This function unpacks the struct provided as an argument into transaction 
-  // variables of this class.
-  // This function is defined in mem_macros.svh
-  `mem_FROM_INITIATOR_STRUCT_FUNCTION 
-
-  //*******************************************************************
-  // Responder macro used by mem_driver and mem_driver_bfm
-  // to communicate Responder driven data to mem_driver_bfm.
-  // This struct is defined in mem_macros.svh
-  `mem_RESPONDER_STRUCT
-    mem_responder_s mem_responder_struct;
-  //*******************************************************************
-  // FUNCTION: to_responder_struct()
-  // This function packs transaction variables into a mem_responder_s
-  // structure.  The function returns the handle to the mem_responder_struct.
-  // This function is defined in mem_macros.svh
-  `mem_TO_RESPONDER_STRUCT_FUNCTION 
-  //*******************************************************************
-  // FUNCTION: from_responder_struct()
-  // This function unpacks the struct provided as an argument into transaction 
-  // variables of this class.
-  // This function is defined in mem_macros.svh
-  `mem_FROM_RESPONDER_STRUCT_FUNCTION 
   // ****************************************************************************
   // FUNCTION : new()
   // This function is the standard SystemVerilog constructor.

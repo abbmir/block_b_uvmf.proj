@@ -55,7 +55,7 @@
 //
 import uvmf_base_pkg_hdl::*;
 import pkt_pkg_hdl::*;
-`include "src/pkt_macros.svh"
+import pkt_pkg::*;
 
 interface pkt_driver_bfm #(
   int DATA_WIDTH = 240,
@@ -63,8 +63,6 @@ interface pkt_driver_bfm #(
   )
 
   (pkt_if bus);
-  // The following pragma and additional ones in-lined further below are for running this BFM on Veloce
-  // pragma attribute pkt_driver_bfm partition_interface_xif
 
 `ifndef XRTL
 // This code is to aid in debugging parameter mismatches between the BFM and its corresponding agent.
@@ -137,26 +135,7 @@ end
     .STATUS_WIDTH(STATUS_WIDTH)
     )
   proxy;
-  // pragma tbx oneway proxy.my_function_name_in_uvm_driver                 
 
-  // ****************************************************************************
-  // **************************************************************************** 
-  // Macros that define structs located in pkt_macros.svh
-  // ****************************************************************************
-  // Struct for passing configuration data from pkt_driver to this BFM
-  // ****************************************************************************
-  `pkt_CONFIGURATION_STRUCT
-  // ****************************************************************************
-  // Structs for INITIATOR and RESPONDER data flow
-  //*******************************************************************
-  // Initiator macro used by pkt_driver and pkt_driver_bfm
-  // to communicate initiator driven data to pkt_driver_bfm.           
-  `pkt_INITIATOR_STRUCT
-    pkt_initiator_s initiator_struct;
-  // Responder macro used by pkt_driver and pkt_driver_bfm
-  // to communicate Responder driven data to pkt_driver_bfm.
-  `pkt_RESPONDER_STRUCT
-    pkt_responder_s responder_struct;
 
   // ****************************************************************************
 // pragma uvmf custom reset_condition_and_response begin
@@ -187,7 +166,14 @@ end
   // variables.
   //
 
-  function void configure(pkt_configuration_s pkt_configuration_arg); // pragma tbx xtf  
+  function void configure(pkt_configuration 
+                         #(
+                         DATA_WIDTH,
+                         STATUS_WIDTH
+                         )
+
+                         pkt_configuration_arg
+                         );  
     initiator_responder = pkt_configuration_arg.initiator_responder;
     src_address = pkt_configuration_arg.src_address;
   // pragma uvmf custom configure begin
@@ -199,52 +185,45 @@ end
 // UVMF_CHANGE_ME
 // This task is used by an initator.  The task first initiates a transfer then
 // waits for the responder to complete the transfer.
-    task initiate_and_get_response( 
-       // This argument passes transaction variables used by an initiator
-       // to perform the initial part of a protocol transfer.  The values
-       // come from a sequence item created in a sequence.
-       input pkt_initiator_s pkt_initiator_struct, 
-       // This argument is used to send data received from the responder
-       // back to the sequence item.  The sequence item is returned to the sequence.
-       output pkt_responder_s pkt_responder_struct 
-       );// pragma tbx xtf  
+    task initiate_and_get_response( pkt_transaction 
+                                  #(
+                                  DATA_WIDTH,
+                                  STATUS_WIDTH
+                                  )
+
+                                  initiator_trans  
+                                  );
        // 
-       // Members within the pkt_initiator_struct:
+       // Variables within the initiator_trans:
        //   bit [DATA_WIDTH-1:0] data ;
        //   bit [DATA_WIDTH-1:0] dst_address ;
        //   bit [STATUS_WIDTH-1:0] status ;
-       // Members within the pkt_responder_struct:
-       //   bit [DATA_WIDTH-1:0] data ;
-       //   bit [DATA_WIDTH-1:0] dst_address ;
-       //   bit [STATUS_WIDTH-1:0] status ;
-       initiator_struct = pkt_initiator_struct;
        //
        // Reference code;
        //    How to wait for signal value
        //      while (control_signal == 1'b1) @(posedge pclk_i);
        //    
-       //    How to assign a responder struct member, named xyz, from a signal.   
+       //    How to assign a initiator_trans variable, named xyz, from a signal.   
        //    All available initiator input and inout signals listed.
-       //    Initiator input signals
-       //      pkt_responder_struct.xyz = rdy_i;  //     
-       //      pkt_responder_struct.xyz = status_i;  //    [STATUS_WIDTH-1:0] 
-       //    Initiator inout signals
-       //    How to assign a signal from an initiator struct member named xyz.   
+       //    Initiator input signals:
+       //      initiator_trans.xyz = rdy_i;  //     
+       //      initiator_trans.xyz = status_i;  //    [STATUS_WIDTH-1:0] 
+       //    Initiator inout signals:
+       //    How to assign a signal, named xyz, from a initiator_trans varaiable.   
        //    All available initiator output and inout signals listed.
        //    Notice the _o.  Those are storage variables that allow for procedural assignment.
-       //    Initiator output signals
-       //      sop_o <= pkt_initiator_struct.xyz;  //     
-       //      eop_o <= pkt_initiator_struct.xyz;  //     
-       //      data_o <= pkt_initiator_struct.xyz;  //    [DATA_WIDTH-1:0] 
-       //    Initiator inout signals
+       //    Initiator output signals:
+       //      sop_o <= initiator_trans.xyz;  //     
+       //      eop_o <= initiator_trans.xyz;  //     
+       //      data_o <= initiator_trans.xyz;  //    [DATA_WIDTH-1:0] 
+       //    Initiator inout signals:
     // Initiate a transfer using the data received.
     @(posedge pclk_i);
     @(posedge pclk_i);
     // Wait for the responder to complete the transfer then place the responder data into 
-    // pkt_responder_struct.
+    // initiator_trans.
     @(posedge pclk_i);
     @(posedge pclk_i);
-    responder_struct = pkt_responder_struct;
   endtask        
 // pragma uvmf custom initiate_and_get_response end
 
@@ -258,19 +237,16 @@ bit first_transfer=1;
 // UVMF_CHANGE_ME
 // This task is used by a responder.  The task first completes the current 
 // transfer in progress then waits for the initiator to start the next transfer.
-  task respond_and_wait_for_next_transfer( 
-       // This argument is used to send data received from the initiator
-       // back to the sequence item.  The sequence determines how to respond.
-       output pkt_initiator_s pkt_initiator_struct, 
-       // This argument passes transaction variables used by a responder
-       // to complete a protocol transfer.  The values come from a sequence item.       
-       input pkt_responder_s pkt_responder_struct 
-       );// pragma tbx xtf   
-  // Variables within the pkt_initiator_struct:
-  //   bit [DATA_WIDTH-1:0] data ;
-  //   bit [DATA_WIDTH-1:0] dst_address ;
-  //   bit [STATUS_WIDTH-1:0] status ;
-  // Variables within the pkt_responder_struct:
+  
+  task respond_and_wait_for_next_transfer( pkt_transaction 
+                                         #(
+                                         DATA_WIDTH,
+                                         STATUS_WIDTH
+                                         )
+
+                                         responder_trans  
+                                         );     
+  // Variables within the responder_trans:
   //   bit [DATA_WIDTH-1:0] data ;
   //   bit [DATA_WIDTH-1:0] dst_address ;
   //   bit [STATUS_WIDTH-1:0] status ;
@@ -278,31 +254,32 @@ bit first_transfer=1;
        //    How to wait for signal value
        //      while (control_signal == 1'b1) @(posedge pclk_i);
        //    
-       //    How to assign a responder struct member, named xyz, from a signal.   
+       //    How to assign a responder_trans member, named xyz, from a signal.   
        //    All available responder input and inout signals listed.
        //    Responder input signals
-       //      pkt_responder_struct.xyz = sop_i;  //     
-       //      pkt_responder_struct.xyz = eop_i;  //     
-       //      pkt_responder_struct.xyz = data_i;  //    [DATA_WIDTH-1:0] 
+       //      responder_trans.xyz = sop_i;  //     
+       //      responder_trans.xyz = eop_i;  //     
+       //      responder_trans.xyz = data_i;  //    [DATA_WIDTH-1:0] 
        //    Responder inout signals
-       //    How to assign a signal, named xyz, from an initiator struct member.   
+       //    How to assign a signal from a responder_trans member named xyz.   
        //    All available responder output and inout signals listed.
        //    Notice the _o.  Those are storage variables that allow for procedural assignment.
-       //    Responder output signals
-       //      rdy_o <= pkt_initiator_struct.xyz;  //     
-       //      status_o <= pkt_initiator_struct.xyz;  //    [STATUS_WIDTH-1:0] 
+       ///   Responder output signals
+       //      rdy_o <= responder_trans.xyz;  //     
+       //      status_o <= responder_trans.xyz;  //    [STATUS_WIDTH-1:0] 
        //    Responder inout signals
     
+
   @(posedge pclk_i);
   if (!first_transfer) begin
     // Perform transfer response here.   
-    // Reply using data recieved in the pkt_responder_struct.
+    // Reply using data recieved in the responder_trans.
     @(posedge pclk_i);
     // Reply using data recieved in the transaction handle.
     @(posedge pclk_i);
   end
     // Wait for next transfer then gather info from intiator about the transfer.
-    // Place the data into the pkt_initiator_struct.
+    // Place the data into the responder_trans handle.
     @(posedge pclk_i);
     @(posedge pclk_i);
     first_transfer = 0;

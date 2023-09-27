@@ -36,66 +36,6 @@ class pkt_transaction #(
   // pragma uvmf custom class_item_additional begin
   // pragma uvmf custom class_item_additional end
 
-  //*******************************************************************
-  //*******************************************************************
-  // Macros that define structs and associated functions are
-  // located in pkt_macros.svh
-
-  //*******************************************************************
-  // Monitor macro used by pkt_monitor and pkt_monitor_bfm
-  // This struct is defined in pkt_macros.svh
-  `pkt_MONITOR_STRUCT
-    pkt_monitor_s pkt_monitor_struct;
-  //*******************************************************************
-  // FUNCTION: to_monitor_struct()
-  // This function packs transaction variables into a pkt_monitor_s
-  // structure.  The function returns the handle to the pkt_monitor_struct.
-  // This function is defined in pkt_macros.svh
-  `pkt_TO_MONITOR_STRUCT_FUNCTION 
-  //*******************************************************************
-  // FUNCTION: from_monitor_struct()
-  // This function unpacks the struct provided as an argument into transaction 
-  // variables of this class.
-  // This function is defined in pkt_macros.svh
-  `pkt_FROM_MONITOR_STRUCT_FUNCTION 
-
-  //*******************************************************************
-  // Initiator macro used by pkt_driver and pkt_driver_bfm
-  // to communicate initiator driven data to pkt_driver_bfm.
-  // This struct is defined in pkt_macros.svh
-  `pkt_INITIATOR_STRUCT
-    pkt_initiator_s pkt_initiator_struct;
-  //*******************************************************************
-  // FUNCTION: to_initiator_struct()
-  // This function packs transaction variables into a pkt_initiator_s
-  // structure.  The function returns the handle to the pkt_initiator_struct.
-  // This function is defined in pkt_macros.svh
-  `pkt_TO_INITIATOR_STRUCT_FUNCTION  
-  //*******************************************************************
-  // FUNCTION: from_initiator_struct()
-  // This function unpacks the struct provided as an argument into transaction 
-  // variables of this class.
-  // This function is defined in pkt_macros.svh
-  `pkt_FROM_INITIATOR_STRUCT_FUNCTION 
-
-  //*******************************************************************
-  // Responder macro used by pkt_driver and pkt_driver_bfm
-  // to communicate Responder driven data to pkt_driver_bfm.
-  // This struct is defined in pkt_macros.svh
-  `pkt_RESPONDER_STRUCT
-    pkt_responder_s pkt_responder_struct;
-  //*******************************************************************
-  // FUNCTION: to_responder_struct()
-  // This function packs transaction variables into a pkt_responder_s
-  // structure.  The function returns the handle to the pkt_responder_struct.
-  // This function is defined in pkt_macros.svh
-  `pkt_TO_RESPONDER_STRUCT_FUNCTION 
-  //*******************************************************************
-  // FUNCTION: from_responder_struct()
-  // This function unpacks the struct provided as an argument into transaction 
-  // variables of this class.
-  // This function is defined in pkt_macros.svh
-  `pkt_FROM_RESPONDER_STRUCT_FUNCTION 
   // ****************************************************************************
   // FUNCTION : new()
   // This function is the standard SystemVerilog constructor.

@@ -46,18 +46,6 @@ class pkt_driver  #(
                               STATUS_WIDTH
                               )
 )
-//*******************************************************************
-// Macros that define structs located in pkt_macros.svh
-//*******************************************************************
-// Initiator macro used by pkt_driver and pkt_driver_bfm
-// to communicate initiator driven data to pkt_driver_bfm.           
-`pkt_INITIATOR_STRUCT
-  pkt_initiator_s pkt_initiator_struct;
-//*******************************************************************
-// Responder macro used by pkt_driver and pkt_driver_bfm
-// to communicate Responder driven data to pkt_driver_bfm.
-`pkt_RESPONDER_STRUCT
-  pkt_responder_s pkt_responder_struct;
 
 // pragma uvmf custom class_item_additional begin
 // pragma uvmf custom class_item_additional end
@@ -74,7 +62,7 @@ class pkt_driver  #(
 // using the configuration struct.
 //
   virtual function void configure(input CONFIG_T cfg);
-      bfm.configure( cfg.to_struct() );
+      bfm.configure( cfg );
   endfunction
 
 // ****************************************************************************
@@ -90,20 +78,10 @@ class pkt_driver  #(
 // pragma uvmf custom access begin
     if (configuration.initiator_responder==RESPONDER) begin
       // Complete current transfer and wait for next transfer
-      bfm.respond_and_wait_for_next_transfer( 
-          pkt_initiator_struct, 
-          txn.to_responder_struct() 
-          );
-      // Unpack information about initiated transfer received by this responder
-      txn.from_initiator_struct(pkt_initiator_struct);
+      bfm.respond_and_wait_for_next_transfer( txn );
     end else begin    
       // Initiate a transfer and get response
-      bfm.initiate_and_get_response( 
-          txn.to_initiator_struct(), 
-          pkt_responder_struct 
-          );
-      // Unpack transfer response information received by this initiator
-      txn.from_responder_struct(pkt_responder_struct);
+      bfm.initiate_and_get_response( txn );
     end
 // pragma uvmf custom access end
   endtask

@@ -55,7 +55,7 @@
 //
 import uvmf_base_pkg_hdl::*;
 import mem_pkg_hdl::*;
-`include "src/mem_macros.svh"
+import mem_pkg::*;
 
 interface mem_driver_bfm #(
   int DATA_WIDTH = 220,
@@ -63,8 +63,6 @@ interface mem_driver_bfm #(
   )
 
   (mem_if bus);
-  // The following pragma and additional ones in-lined further below are for running this BFM on Veloce
-  // pragma attribute mem_driver_bfm partition_interface_xif
 
 `ifndef XRTL
 // This code is to aid in debugging parameter mismatches between the BFM and its corresponding agent.
@@ -142,26 +140,7 @@ end
     .ADDR_WIDTH(ADDR_WIDTH)
     )
   proxy;
-  // pragma tbx oneway proxy.my_function_name_in_uvm_driver                 
 
-  // ****************************************************************************
-  // **************************************************************************** 
-  // Macros that define structs located in mem_macros.svh
-  // ****************************************************************************
-  // Struct for passing configuration data from mem_driver to this BFM
-  // ****************************************************************************
-  `mem_CONFIGURATION_STRUCT
-  // ****************************************************************************
-  // Structs for INITIATOR and RESPONDER data flow
-  //*******************************************************************
-  // Initiator macro used by mem_driver and mem_driver_bfm
-  // to communicate initiator driven data to mem_driver_bfm.           
-  `mem_INITIATOR_STRUCT
-    mem_initiator_s initiator_struct;
-  // Responder macro used by mem_driver and mem_driver_bfm
-  // to communicate Responder driven data to mem_driver_bfm.
-  `mem_RESPONDER_STRUCT
-    mem_responder_s responder_struct;
 
   // ****************************************************************************
 // pragma uvmf custom reset_condition_and_response begin
@@ -193,7 +172,14 @@ end
   // variables.
   //
 
-  function void configure(mem_configuration_s mem_configuration_arg); // pragma tbx xtf  
+  function void configure(mem_configuration 
+                         #(
+                         DATA_WIDTH,
+                         ADDR_WIDTH
+                         )
+
+                         mem_configuration_arg
+                         );  
     initiator_responder = mem_configuration_arg.initiator_responder;
     transfer_gap = mem_configuration_arg.transfer_gap;
     speed_grade = mem_configuration_arg.speed_grade;
@@ -206,57 +192,48 @@ end
 // UVMF_CHANGE_ME
 // This task is used by an initator.  The task first initiates a transfer then
 // waits for the responder to complete the transfer.
-    task initiate_and_get_response( 
-       // This argument passes transaction variables used by an initiator
-       // to perform the initial part of a protocol transfer.  The values
-       // come from a sequence item created in a sequence.
-       input mem_initiator_s mem_initiator_struct, 
-       // This argument is used to send data received from the responder
-       // back to the sequence item.  The sequence item is returned to the sequence.
-       output mem_responder_s mem_responder_struct 
-       );// pragma tbx xtf  
+    task initiate_and_get_response( mem_transaction 
+                                  #(
+                                  DATA_WIDTH,
+                                  ADDR_WIDTH
+                                  )
+
+                                  initiator_trans  
+                                  );
        // 
-       // Members within the mem_initiator_struct:
+       // Variables within the initiator_trans:
        //   bit [DATA_WIDTH-1:0] read_data ;
        //   bit [DATA_WIDTH-1:0] write_data ;
        //   bit [ADDR_WIDTH-1:0] address ;
        //   bit [3:0] byte_enable ;
        //   int chksum ;
-       // Members within the mem_responder_struct:
-       //   bit [DATA_WIDTH-1:0] read_data ;
-       //   bit [DATA_WIDTH-1:0] write_data ;
-       //   bit [ADDR_WIDTH-1:0] address ;
-       //   bit [3:0] byte_enable ;
-       //   int chksum ;
-       initiator_struct = mem_initiator_struct;
        //
        // Reference code;
        //    How to wait for signal value
        //      while (control_signal == 1'b1) @(posedge clock_i);
        //    
-       //    How to assign a responder struct member, named xyz, from a signal.   
+       //    How to assign a initiator_trans variable, named xyz, from a signal.   
        //    All available initiator input and inout signals listed.
-       //    Initiator input signals
-       //      mem_responder_struct.xyz = rdy_i;  //     
-       //      mem_responder_struct.xyz = rdata_i;  //    [DATA_WIDTH-1:0] 
-       //    Initiator inout signals
-       //    How to assign a signal from an initiator struct member named xyz.   
+       //    Initiator input signals:
+       //      initiator_trans.xyz = rdy_i;  //     
+       //      initiator_trans.xyz = rdata_i;  //    [DATA_WIDTH-1:0] 
+       //    Initiator inout signals:
+       //    How to assign a signal, named xyz, from a initiator_trans varaiable.   
        //    All available initiator output and inout signals listed.
        //    Notice the _o.  Those are storage variables that allow for procedural assignment.
-       //    Initiator output signals
-       //      cs_o <= mem_initiator_struct.xyz;  //     
-       //      rwn_o <= mem_initiator_struct.xyz;  //     
-       //      addr_o <= mem_initiator_struct.xyz;  //    [ADDR_WIDTH-1:0] 
-       //      wdata_o <= mem_initiator_struct.xyz;  //    [DATA_WIDTH-1:0] 
-       //    Initiator inout signals
+       //    Initiator output signals:
+       //      cs_o <= initiator_trans.xyz;  //     
+       //      rwn_o <= initiator_trans.xyz;  //     
+       //      addr_o <= initiator_trans.xyz;  //    [ADDR_WIDTH-1:0] 
+       //      wdata_o <= initiator_trans.xyz;  //    [DATA_WIDTH-1:0] 
+       //    Initiator inout signals:
     // Initiate a transfer using the data received.
     @(posedge clock_i);
     @(posedge clock_i);
     // Wait for the responder to complete the transfer then place the responder data into 
-    // mem_responder_struct.
+    // initiator_trans.
     @(posedge clock_i);
     @(posedge clock_i);
-    responder_struct = mem_responder_struct;
   endtask        
 // pragma uvmf custom initiate_and_get_response end
 
@@ -270,21 +247,16 @@ bit first_transfer=1;
 // UVMF_CHANGE_ME
 // This task is used by a responder.  The task first completes the current 
 // transfer in progress then waits for the initiator to start the next transfer.
-  task respond_and_wait_for_next_transfer( 
-       // This argument is used to send data received from the initiator
-       // back to the sequence item.  The sequence determines how to respond.
-       output mem_initiator_s mem_initiator_struct, 
-       // This argument passes transaction variables used by a responder
-       // to complete a protocol transfer.  The values come from a sequence item.       
-       input mem_responder_s mem_responder_struct 
-       );// pragma tbx xtf   
-  // Variables within the mem_initiator_struct:
-  //   bit [DATA_WIDTH-1:0] read_data ;
-  //   bit [DATA_WIDTH-1:0] write_data ;
-  //   bit [ADDR_WIDTH-1:0] address ;
-  //   bit [3:0] byte_enable ;
-  //   int chksum ;
-  // Variables within the mem_responder_struct:
+  
+  task respond_and_wait_for_next_transfer( mem_transaction 
+                                         #(
+                                         DATA_WIDTH,
+                                         ADDR_WIDTH
+                                         )
+
+                                         responder_trans  
+                                         );     
+  // Variables within the responder_trans:
   //   bit [DATA_WIDTH-1:0] read_data ;
   //   bit [DATA_WIDTH-1:0] write_data ;
   //   bit [ADDR_WIDTH-1:0] address ;
@@ -294,32 +266,33 @@ bit first_transfer=1;
        //    How to wait for signal value
        //      while (control_signal == 1'b1) @(posedge clock_i);
        //    
-       //    How to assign a responder struct member, named xyz, from a signal.   
+       //    How to assign a responder_trans member, named xyz, from a signal.   
        //    All available responder input and inout signals listed.
        //    Responder input signals
-       //      mem_responder_struct.xyz = cs_i;  //     
-       //      mem_responder_struct.xyz = rwn_i;  //     
-       //      mem_responder_struct.xyz = addr_i;  //    [ADDR_WIDTH-1:0] 
-       //      mem_responder_struct.xyz = wdata_i;  //    [DATA_WIDTH-1:0] 
+       //      responder_trans.xyz = cs_i;  //     
+       //      responder_trans.xyz = rwn_i;  //     
+       //      responder_trans.xyz = addr_i;  //    [ADDR_WIDTH-1:0] 
+       //      responder_trans.xyz = wdata_i;  //    [DATA_WIDTH-1:0] 
        //    Responder inout signals
-       //    How to assign a signal, named xyz, from an initiator struct member.   
+       //    How to assign a signal from a responder_trans member named xyz.   
        //    All available responder output and inout signals listed.
        //    Notice the _o.  Those are storage variables that allow for procedural assignment.
-       //    Responder output signals
-       //      rdy_o <= mem_initiator_struct.xyz;  //     
-       //      rdata_o <= mem_initiator_struct.xyz;  //    [DATA_WIDTH-1:0] 
+       ///   Responder output signals
+       //      rdy_o <= responder_trans.xyz;  //     
+       //      rdata_o <= responder_trans.xyz;  //    [DATA_WIDTH-1:0] 
        //    Responder inout signals
     
+
   @(posedge clock_i);
   if (!first_transfer) begin
     // Perform transfer response here.   
-    // Reply using data recieved in the mem_responder_struct.
+    // Reply using data recieved in the responder_trans.
     @(posedge clock_i);
     // Reply using data recieved in the transaction handle.
     @(posedge clock_i);
   end
     // Wait for next transfer then gather info from intiator about the transfer.
-    // Place the data into the mem_initiator_struct.
+    // Place the data into the responder_trans handle.
     @(posedge clock_i);
     @(posedge clock_i);
     first_transfer = 0;

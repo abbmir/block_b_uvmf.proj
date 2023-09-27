@@ -111,3 +111,4 @@ uvmf:
         type: int
         unpacked_dimension: ''
       use_dpi_link: 'False'
+      veloce_ready: 'False'

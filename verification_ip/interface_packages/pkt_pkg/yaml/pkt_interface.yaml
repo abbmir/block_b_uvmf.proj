@@ -102,3 +102,4 @@ uvmf:
         type: bit [STATUS_WIDTH-1:0]
         unpacked_dimension: ''
       use_dpi_link: 'False'
+      veloce_ready: 'False'

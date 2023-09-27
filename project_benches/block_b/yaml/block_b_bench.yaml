@@ -55,3 +55,4 @@ uvmf:
       - name: UDP_DATA_WIDTH
         value: TEST_UDP_DATA_WIDTH
       use_dpi_link: 'False'
+      veloce_ready: 'False'

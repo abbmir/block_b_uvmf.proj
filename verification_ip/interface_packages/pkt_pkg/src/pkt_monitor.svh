@@ -43,10 +43,6 @@ class pkt_monitor #(
                               )
 )
 
-// Structure used to pass data from monitor BFM to monitor class in agent.
-// Use to_monitor_struct function to pack transaction variables into structure.
-// Use from_monitor_struct function to unpack transaction variables from structure.
-`pkt_MONITOR_STRUCT
 
   // pragma uvmf custom class_item_additional begin
   // pragma uvmf custom class_item_additional end
@@ -63,7 +59,7 @@ class pkt_monitor #(
 // using the configuration struct.
 //
    virtual function void configure(input CONFIG_T cfg);
-      bfm.configure( cfg.to_struct() );
+      bfm.configure( cfg );
 
    endfunction
 
@@ -85,17 +81,18 @@ class pkt_monitor #(
   endtask                                                                                    
   
 // **************************************************************************  
-  
 // This function is called by the monitor BFM.  It receives data observed by the
-// monitor BFM.  Data is passed using the pkt_monitor_struct.          
- virtual function void notify_transaction(input pkt_monitor_s pkt_monitor_struct);
+// monitor BFM.  Data is passed using the pkt_transaction object handle.          
+ virtual function void notify_transaction(pkt_transaction
+                                         #(
+                                         DATA_WIDTH,
+                                         STATUS_WIDTH
+                                         )
  
+                                         monitored_trans
+                                         );
  
-    trans = new("trans");
-    trans.from_monitor_struct(pkt_monitor_struct);
-    trans.start_time = time_stamp;                                                          
-    trans.end_time = $time;                                                                 
-    time_stamp = trans.end_time;
+    trans = monitored_trans;
  
     analyze(trans);                                                                         
   endfunction  

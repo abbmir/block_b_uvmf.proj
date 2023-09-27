@@ -39,7 +39,6 @@ package pkt_pkg;
 
    // pragma uvmf custom package_imports_additional begin 
    // pragma uvmf custom package_imports_additional end
-   `include "src/pkt_macros.svh"
 
    export pkt_pkg_hdl::*;
    

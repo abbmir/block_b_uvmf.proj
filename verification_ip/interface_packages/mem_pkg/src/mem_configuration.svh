@@ -59,26 +59,6 @@ class mem_configuration #(
     // pragma uvmf custom covergroup end
   endgroup
 
-  //*******************************************************************
-  //*******************************************************************
-  // Structure used to pass configuration variables to monitor and driver BFM's.
-  // Use to_struct function to pack variables into structure.
-  // Use from_struct function to unpack variables from structure.
-  // This structure is defined in mem_macros.svh
-  `mem_CONFIGURATION_STRUCT
-  mem_configuration_s mem_configuration_struct;
-  //*******************************************************************
-  // FUNCTION: to_struct()
-  // This function packs variables into a mem_configuration_s
-  // structure.  The function returns the handle to the mem_configuration_struct.
-  // This function is defined in mem_macros.svh
-  `mem_CONFIGURATION_TO_STRUCT_FUNCTION
-  //*******************************************************************
-  // FUNCTION: from_struct()
-  // This function unpacks the struct provided as an argument into 
-  // variables of this class.
-  // This function is defined in mem_macros.svh
-  `mem_CONFIGURATION_FROM_STRUCT_FUNCTION
 
   // ****************************************************************************
   // FUNCTION : new()

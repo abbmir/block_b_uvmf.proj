@@ -57,26 +57,6 @@ class pkt_configuration #(
     // pragma uvmf custom covergroup end
   endgroup
 
-  //*******************************************************************
-  //*******************************************************************
-  // Structure used to pass configuration variables to monitor and driver BFM's.
-  // Use to_struct function to pack variables into structure.
-  // Use from_struct function to unpack variables from structure.
-  // This structure is defined in pkt_macros.svh
-  `pkt_CONFIGURATION_STRUCT
-  pkt_configuration_s pkt_configuration_struct;
-  //*******************************************************************
-  // FUNCTION: to_struct()
-  // This function packs variables into a pkt_configuration_s
-  // structure.  The function returns the handle to the pkt_configuration_struct.
-  // This function is defined in pkt_macros.svh
-  `pkt_CONFIGURATION_TO_STRUCT_FUNCTION
-  //*******************************************************************
-  // FUNCTION: from_struct()
-  // This function unpacks the struct provided as an argument into 
-  // variables of this class.
-  // This function is defined in pkt_macros.svh
-  `pkt_CONFIGURATION_FROM_STRUCT_FUNCTION
 
   // ****************************************************************************
   // FUNCTION : new()
